@@ -19,23 +19,38 @@ RUN /update_sources.sh
 
 RUN dpkg --add-architecture armhf
 RUN dpkg --add-architecture arm64
+RUN dpkg --add-architecture riscv64
+RUN dpkg --add-architecture s390x
+RUN dpkg --add-architecture ppc64el
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       libc6-dev:arm64 \
       libc6-dev:armhf \
+      libc6-dev:riscv64 \
+      libc6-dev:s390x \
+      libc6-dev:ppc64el \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3-all \
       python3-numpy \
       build-essential \
       crossbuild-essential-armhf \
       crossbuild-essential-arm64 \
+      crossbuild-essential-riscv64 \
+      crossbuild-essential-s390x \
+      crossbuild-essential-ppc64el \
       libusb-1.0-0-dev \
       libusb-1.0-0-dev:arm64 \
       libusb-1.0-0-dev:armhf \
+      libusb-1.0-0-dev:riscv64 \
+      libusb-1.0-0-dev:s390x \
+      libusb-1.0-0-dev:ppc64el \
       zlib1g-dev \
       zlib1g-dev:armhf \
       zlib1g-dev:arm64 \
+      zlib1g-dev:riscv64 \
+      zlib1g-dev:s390x \
+      zlib1g-dev:ppc64el \
       sudo \
       debhelper \
       pkg-config \

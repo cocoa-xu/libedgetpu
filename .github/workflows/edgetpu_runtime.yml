@@ -1,0 +1,115 @@
+name: edgetpu-runtime
+
+on:
+  pull_request:
+    paths-ignore:
+        - '**/*.md'
+        - 'LICENSE*'
+  push:
+    branches:
+      - master
+      - test-*
+    paths-ignore:
+    - '**/*.md'
+    - 'LICENSE*'
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Compile
+        run: DOCKER_TARGETS=libedgetpu make docker-build
+      - name: Release
+        run: |
+          mkdir -p edgetpu_runtime
+          mv out edgetpu_runtime/libedgetpu
+          cp ./tflite/public/edgetpu.h edgetpu_runtime/libedgetpu/
+          cp ./tflite/public/edgetpu_c.h edgetpu_runtime/libedgetpu/
+          cp ./debian/edgetpu-accelerator.rules edgetpu_runtime/libedgetpu/
+          cp ./LICENSE edgetpu_runtime/libedgetpu/
+          cp ./scripts/*.sh edgetpu_runtime/
+          export ZIP_FILENAME="edgetpu_runtime_$(date '+%Y%m%d')_linux"
+          zip -r -9 -y "${ZIP_FILENAME}" edgetpu_runtime
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: grouper
+          files: "edgetpu_runtime_*.zip"
+
+  build_macos:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          brew install libusb
+          rm -f "$(brew --prefix libusb)/lib/libusb-1.0.a"
+          pip3 install numpy
+      - name: Compile
+        run: |
+          export EDGETPU_SRCROOT="$(pwd)"
+          cd .. && git clone https://github.com/Tyilo/insert_dylib.git
+          cd insert_dylib && xcodebuild && cd "${EDGETPU_SRCROOT}"
+
+          CPU=darwin_arm64 make
+
+          echo "insert_dylib for darwin_arm64..."
+          sudo ../insert_dylib/build/Release/insert_dylib --all-yes @loader_path/libusb-1.0.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new
+          sudo mv $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib
+          sudo ../insert_dylib/build/Release/insert_dylib --all-yes @loader_path/libusb-1.0.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new
+          sudo mv $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib
+
+          CPU=darwin_x86_64 make
+          LIBEDGETPU_FILE="out/direct/darwin_x86_64/libedgetpu.1.0.dylib"
+          LIBUSB_IN_LIBEDGETPU="$(otool -L "${LIBEDGETPU_FILE}" | grep libusb | awk -F' \\(compatibility' '/,/{gsub(/[ \t]/, "", $1);print $1}')"
+          LIBUSB="@loader_path/libusb-1.0.0.dylib"
+          if [ "${LIBUSB_IN_LIBEDGETPU}" != "${LIBUSB}" ]; then
+            install_name_tool -change "${LIBUSB_IN_LIBEDGETPU}" "${LIBUSB}" "${LIBEDGETPU_FILE}"
+          fi
+          LIBEDGETPU_FILE="out/throttled/darwin_x86_64/libedgetpu.1.0.dylib"
+          LIBUSB_IN_LIBEDGETPU="$(otool -L "${LIBEDGETPU_FILE}" | grep libusb | awk -F' \\(compatibility' '/,/{gsub(/[ \t]/, "", $1);print $1}')"
+          LIBUSB="@loader_path/libusb-1.0.0.dylib"
+          if [ "${LIBUSB_IN_LIBEDGETPU}" != "${LIBUSB}" ]; then
+            install_name_tool -change "${LIBUSB_IN_LIBEDGETPU}" "${LIBUSB}" "${LIBEDGETPU_FILE}"
+          fi
+      - name: Release
+        run: |
+          mkdir -p edgetpu_runtime
+          mv out edgetpu_runtime/libedgetpu
+          cp ./tflite/public/edgetpu.h edgetpu_runtime/libedgetpu/
+          cp ./tflite/public/edgetpu_c.h edgetpu_runtime/libedgetpu/
+          cp ./LICENSE edgetpu_runtime/libedgetpu/
+          cp ./scripts/*.sh edgetpu_runtime/
+          export ZIP_FILENAME="edgetpu_runtime_$(date '+%Y%m%d')_macos"
+          zip -r -9 -y "${ZIP_FILENAME}" edgetpu_runtime
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: grouper
+          files: "edgetpu_runtime_*.zip"
+
+  build_windows:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download official builds
+        run: |
+          # too much pain to acutally build this on windows
+          # I gave up... Just download official builds...
+          wget https://github.com/google-coral/libedgetpu/releases/download/release-grouper/edgetpu_runtime_20220308.zip
+          unzip edgetpu_runtime_20220308.zip
+          rm -f edgetpu_runtime_20220308.zip
+          mv edgetpu_runtime edgetpu_runtime_20220308
+          mkdir -p edgetpu_runtime/libedgetpu
+          cp -a ./edgetpu_runtime_20220308/*.bat edgetpu_runtime
+          cp -a ./edgetpu_runtime_20220308/third_party edgetpu_runtime/third_party
+          cp ./edgetpu_runtime_20220308/libedgetpu/edgetpu.h edgetpu_runtime/libedgetpu/
+          cp ./edgetpu_runtime_20220308/libedgetpu/edgetpu_c.h edgetpu_runtime/libedgetpu/
+          mkdir -p edgetpu_runtime/libedgetpu/throttled
+          cp -a ./edgetpu_runtime_20220308/libedgetpu/throttled/x64_windows edgetpu_runtime/libedgetpu/throttled/
+          mkdir -p edgetpu_runtime/libedgetpu/direct
+          cp -a ./edgetpu_runtime_20220308/libedgetpu/direct/x64_windows edgetpu_runtime/libedgetpu/direct/
+          export ZIP_FILENAME="edgetpu_runtime_$(date '+%Y%m%d')_windows"
+          zip -r -9 -y "${ZIP_FILENAME}" edgetpu_runtime
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: grouper
+          files: "edgetpu_runtime_*.zip"

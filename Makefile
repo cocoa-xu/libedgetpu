@@ -33,8 +33,8 @@ else
 $(error $(OS) is not supported)
 endif
 
-ifeq ($(filter $(CPU),k8 armv7a aarch64 darwin_arm64 darwin_x86_64),)
-$(error CPU must be k8, armv7a, aarch64, darwin_arm64, or darwin_x86_64)
+ifeq ($(filter $(CPU),k8 armv7a aarch64 riscv64 s390x ppc64el darwin_arm64 darwin_x86_64),)
+$(error CPU must be k8, armv7a, aarch64, riscv64, s390x, ppc64el, darwin_arm64, or darwin_x86_64)
 endif
 
 COMPILATION_MODE ?= opt
@@ -153,9 +153,9 @@ clean:
 DOCKER_CONTEXT_DIR := $(MAKEFILE_DIR)/docker
 DOCKER_WORKSPACE := $(MAKEFILE_DIR)
 DOCKER_CONTAINER_WORKSPACE := /workspace
-DOCKER_CPUS ?= k8 armv7a aarch64
+DOCKER_CPUS ?= k8 armv7a aarch64 riscv64 s390x ppc64el
 DOCKER_TARGETS ?=
-DOCKER_IMAGE ?= debian:stretch
+DOCKER_IMAGE ?= ubuntu:20.04
 DOCKER_TAG_BASE ?= libedgetpu-cross
 DOCKER_TAG := "$(DOCKER_TAG_BASE)-$(subst :,-,$(DOCKER_IMAGE))"
 DOCKER_SHELL_COMMAND ?=

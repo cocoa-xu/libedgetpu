@@ -17,7 +17,7 @@ There are three ways to build libedgetpu:
 Build Linux binaries inside Docker container (works on Linux and macOS):
 ```
 $ DOCKER_CPUS="k8" DOCKER_IMAGE="ubuntu:18.04" DOCKER_TARGETS=libedgetpu make docker-build
-$ DOCKER_CPUS="armv7a aarch64" DOCKER_IMAGE="debian:stretch" DOCKER_TARGETS=libedgetpu make docker-build
+$ DOCKER_CPUS="armv7a aarch64 riscv64 s390x ppc64el" DOCKER_IMAGE="ubuntu:20.04" DOCKER_TARGETS=libedgetpu make docker-build
 ```
 
 All built binaries go to the `out` directory. Note that the bazel-* are not copied to the host from the Docker container.
@@ -36,10 +36,13 @@ Build native binaries on Windows:
 $ build.bat
 ```
 
-Cross-compile for ARMv7-A (32 bit), and ARMv8-A (64 bit) on Linux:
+Cross-compile for ARMv7-A (32 bit), ARMv8-A (64 bit), RISC-V (64 bit), s390x, ppc64el (PowerPC 64 bit little-endian) on Linux:
 ```
 $ CPU=armv7a make
 $ CPU=aarch64 make
+$ CPU=riscv64 make
+$ CPU=s390x make
+$ CPU=ppc64el make
 ```
 
 ### Makefile
