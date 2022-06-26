@@ -1,0 +1,22 @@
+#!/bin/sh
+
+OUT_DIR="$1"
+LIBEDGETPU_NAME="$2"
+TRIPLET="$3"
+PACK_DIR="$4"
+
+OUT_DIRECT_DIR="${OUT_DIR}/direct/${LIBEDGETPU_NAME}"
+OUT_THROTTLED_DIR="${OUT_DIR}/throttled/${LIBEDGETPU_NAME}"
+PACK_LIBEDGETPU_DIR="${PACK_DIR}/libedgetpu"
+PACK_LIBEDGETPU_DIRECT_DIR="${PACK_LIBEDGETPU_DIR}/direct/${TRIPLET}"
+PACK_LIBEDGETPU_THROTTLED_DIR="${PACK_LIBEDGETPU_DIR}/throttled/${TRIPLET}"
+mkdir -p "${PACK_LIBEDGETPU_DIR}/direct"
+mkdir -p "${PACK_LIBEDGETPU_DIR}/throttled"
+mv "${OUT_DIRECT_DIR}" "${PACK_LIBEDGETPU_DIRECT_DIR}"
+mv "${OUT_THROTTLED_DIR}" "${PACK_LIBEDGETPU_THROTTLED_DIR}"
+cp ./tflite/public/edgetpu.h "${PACK_LIBEDGETPU_DIR}"
+cp ./tflite/public/edgetpu_c.h "${PACK_LIBEDGETPU_DIR}"
+cp ./debian/edgetpu-accelerator.rules "${PACK_LIBEDGETPU_DIR}"
+cp ./LICENSE "${PACK_LIBEDGETPU_DIR}"
+cp ./scripts/install.sh "${PACK_DIR}"
+cp ./scripts/uninstall.sh "${PACK_DIR}"
