@@ -22,15 +22,35 @@ jobs:
         run: DOCKER_TARGETS=libedgetpu make docker-build
       - name: Release
         run: |
-          mkdir -p edgetpu_runtime
-          mv out edgetpu_runtime/libedgetpu
-          cp ./tflite/public/edgetpu.h edgetpu_runtime/libedgetpu/
-          cp ./tflite/public/edgetpu_c.h edgetpu_runtime/libedgetpu/
-          cp ./debian/edgetpu-accelerator.rules edgetpu_runtime/libedgetpu/
-          cp ./LICENSE edgetpu_runtime/libedgetpu/
-          cp ./scripts/*.sh edgetpu_runtime/
-          export ZIP_FILENAME="edgetpu_runtime_$(date '+%Y%m%d')_linux"
-          zip -r -9 -y "${ZIP_FILENAME}" edgetpu_runtime
+          export PACK_DIR=edgetpu_runtime
+
+          export LIBEDGETPU_NAME=k8
+          export TRIPLET=x86_64-linux-gnu
+          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          rm -rf "${PACK_DIR}"
+
+          export LIBEDGETPU_NAME=armv7a
+          export TRIPLET=armv7l-linux-gnueabihf
+          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          rm -rf "${PACK_DIR}"
+
+          export LIBEDGETPU_NAME=aarch64
+          export TRIPLET=aarch64-linux-gnu
+          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          rm -rf "${PACK_DIR}"
+
+          export LIBEDGETPU_NAME=riscv64
+          export TRIPLET=riscv64-linux-gnu
+          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          rm -rf "${PACK_DIR}"
       - uses: softprops/action-gh-release@v1
         with:
           tag_name: grouper
@@ -74,41 +94,21 @@ jobs:
           fi
       - name: Release
         run: |
-          mkdir -p edgetpu_runtime
-          mv out edgetpu_runtime/libedgetpu
-          cp ./tflite/public/edgetpu.h edgetpu_runtime/libedgetpu/
-          cp ./tflite/public/edgetpu_c.h edgetpu_runtime/libedgetpu/
-          cp ./LICENSE edgetpu_runtime/libedgetpu/
-          cp ./scripts/*.sh edgetpu_runtime/
-          export ZIP_FILENAME="edgetpu_runtime_$(date '+%Y%m%d')_macos"
-          zip -r -9 -y "${ZIP_FILENAME}" edgetpu_runtime
-      - uses: softprops/action-gh-release@v1
-        with:
-          tag_name: grouper
-          files: "edgetpu_runtime_*.zip"
+          export PACK_DIR=edgetpu_runtime
 
-  build_windows:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Download official builds
-        run: |
-          # too much pain to acutally build this on windows
-          # I gave up... Just download official builds...
-          wget https://github.com/google-coral/libedgetpu/releases/download/release-grouper/edgetpu_runtime_20220308.zip
-          unzip edgetpu_runtime_20220308.zip
-          rm -f edgetpu_runtime_20220308.zip
-          mv edgetpu_runtime edgetpu_runtime_20220308
-          mkdir -p edgetpu_runtime/libedgetpu
-          cp -a ./edgetpu_runtime_20220308/*.bat edgetpu_runtime
-          cp -a ./edgetpu_runtime_20220308/third_party edgetpu_runtime/third_party
-          cp ./edgetpu_runtime_20220308/libedgetpu/edgetpu.h edgetpu_runtime/libedgetpu/
-          cp ./edgetpu_runtime_20220308/libedgetpu/edgetpu_c.h edgetpu_runtime/libedgetpu/
-          mkdir -p edgetpu_runtime/libedgetpu/throttled
-          cp -a ./edgetpu_runtime_20220308/libedgetpu/throttled/x64_windows edgetpu_runtime/libedgetpu/throttled/
-          mkdir -p edgetpu_runtime/libedgetpu/direct
-          cp -a ./edgetpu_runtime_20220308/libedgetpu/direct/x64_windows edgetpu_runtime/libedgetpu/direct/
-          export ZIP_FILENAME="edgetpu_runtime_$(date '+%Y%m%d')_windows"
-          zip -r -9 -y "${ZIP_FILENAME}" edgetpu_runtime
+          export LIBEDGETPU_NAME=darwin_arm64
+          export TRIPLET=arm64-apple-darwin
+          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          rm -rf "${PACK_DIR}"
+
+          export LIBEDGETPU_NAME=darwin_x86_64
+          export TRIPLET=x86_64-apple-darwin
+          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          rm -rf "${PACK_DIR}"
       - uses: softprops/action-gh-release@v1
         with:
           tag_name: grouper
