@@ -6,6 +6,8 @@ on:
         - '**/*.md'
         - 'LICENSE*'
   push:
+    tags:
+      - 'v*'
     branches:
       - master
       - test-*
@@ -18,8 +20,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+
       - name: Compile
         run: DOCKER_TARGETS=libedgetpu make docker-build
+
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
@@ -27,44 +31,47 @@ jobs:
           export LIBEDGETPU_NAME=k8
           export TRIPLET=x86_64-linux-gnu
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=armv7a
           export TRIPLET=armv7l-linux-gnueabihf
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=aarch64
           export TRIPLET=aarch64-linux-gnu
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=riscv64
           export TRIPLET=riscv64-linux-gnu
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
+
       - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          tag_name: grouper
           files: "edgetpu_runtime_*.zip"
 
   build_macos:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
+
       - name: Install dependencies
         run: |
           brew install libusb
           rm -f "$(brew --prefix libusb)/lib/libusb-1.0.a"
           pip3 install numpy
+
       - name: Compile
         run: |
           export EDGETPU_SRCROOT="$(pwd)"
@@ -92,6 +99,7 @@ jobs:
           if [ "${LIBUSB_IN_LIBEDGETPU}" != "${LIBUSB}" ]; then
             install_name_tool -change "${LIBUSB_IN_LIBEDGETPU}" "${LIBUSB}" "${LIBEDGETPU_FILE}"
           fi
+
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
@@ -99,17 +107,18 @@ jobs:
           export LIBEDGETPU_NAME=darwin_arm64
           export TRIPLET=arm64-apple-darwin
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=darwin_x86_64
           export TRIPLET=x86_64-apple-darwin
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_$(date '+%Y%m%d')"
+          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
+
       - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          tag_name: grouper
           files: "edgetpu_runtime_*.zip"
