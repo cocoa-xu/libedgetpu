@@ -81,9 +81,9 @@ jobs:
           CPU=darwin_arm64 make
 
           echo "insert_dylib for darwin_arm64..."
-          sudo ../insert_dylib/build/Release/insert_dylib --all-yes @loader_path/libusb-1.0.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new
+          sudo ../insert_dylib/build/Release/insert_dylib --no-strip-codesig @loader_path/libusb-1.0.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new
           sudo mv $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib
-          sudo ../insert_dylib/build/Release/insert_dylib --all-yes @loader_path/libusb-1.0.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new
+          sudo ../insert_dylib/build/Release/insert_dylib --no-strip-codesig @loader_path/libusb-1.0.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new
           sudo mv $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib
 
           CPU=darwin_x86_64 make
