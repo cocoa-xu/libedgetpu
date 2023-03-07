@@ -18,39 +18,55 @@ on:
 jobs:
   build_linux:
     runs-on: ubuntu-20.04
+    env:
+      LIBUSB_VER: "1.0.26"
+      USE_BAZEL_VERSION: "5.4.0"
+    matrix:
+      pair:
+        - host: "x86_64-linux-gnu"
+          cc: "gcc"
+          cpu: "k8"
+          c_compiler: gcc
+        - host: "armv7l-linux-gnueabihf"
+          cc: "arm-linux-gnueabihf-gcc-9"
+          cpu: "armv7a"
+          c_compiler: gcc-arm-linux-gnueabihf
+        - host: "aarch64-linux-gnu"
+          cc: "aarch64-linux-gnu-gcc"
+          cpu: "aarch64"
+          c_compiler: gcc-aarch64-linux-gnu
+        - host: "riscv64-linux-gnu"
+          cc: "riscv64-linux-gnu-gcc"
+          cpu: "riscv64"
+          c_compiler: gcc-riscv64-linux-gnu
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Compile
-        run: DOCKER_TARGETS=libedgetpu make docker-build
+      - name: Install system dependencies
+        run: |
+          sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 unzip zip curl git gzip python3 ca-certificates ${{ matrix.pair.c_compiler }}
+
+      - name: Compile libusb
+        run: |
+          wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
+          tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
+          cd "libusb-${LIBUSB_VER}"
+          ./autogen.sh CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/usr
+          ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/usr
+          make -j`nproc`
+          make install
+
+      - name: Compile libedgetpu
+        run: |
+          CPU="${{ matrix.pair.cpu }}" make libedgetpu
 
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
 
-          export LIBEDGETPU_NAME=k8
-          export TRIPLET=x86_64-linux-gnu
-          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
-          rm -rf "${PACK_DIR}"
-
-          export LIBEDGETPU_NAME=armv7a
-          export TRIPLET=armv7l-linux-gnueabihf
-          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
-          rm -rf "${PACK_DIR}"
-
-          export LIBEDGETPU_NAME=aarch64
-          export TRIPLET=aarch64-linux-gnu
-          bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
-          rm -rf "${PACK_DIR}"
-
-          export LIBEDGETPU_NAME=riscv64
-          export TRIPLET=riscv64-linux-gnu
+          export LIBEDGETPU_NAME="${{ matrix.pair.cpu }}"
+          export TRIPLET="${{ matrix.pair.host }}"
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
           export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
