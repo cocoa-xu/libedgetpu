@@ -63,6 +63,8 @@ jobs:
 
   build_macos:
     runs-on: macos-11
+    env:
+      USE_BAZEL_VERSION: "5.4.0"
     steps:
       - uses: actions/checkout@v3
 
