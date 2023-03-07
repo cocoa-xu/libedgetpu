@@ -71,43 +71,19 @@ jobs:
       - name: Install dependencies
         run: |
           brew install libusb
-          rm -f "$(brew --prefix libusb)/lib/libusb-1.0.a"
           pip3 install numpy
 
       - name: Compile
         run: |
-          export EDGETPU_SRCROOT="$(pwd)"
-          cd .. && git clone https://github.com/Tyilo/insert_dylib.git
-          cd insert_dylib && xcodebuild && cd "${EDGETPU_SRCROOT}"
-
           CPU=darwin_arm64 make
-
-          echo "insert_dylib for darwin_arm64..."
-          sudo ../insert_dylib/build/Release/insert_dylib --no-strip-codesig @loader_path/libusb-1.0.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new
-          sudo mv $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib_new $(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib
-          sudo ../insert_dylib/build/Release/insert_dylib --no-strip-codesig @loader_path/libusb-1.0.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new
-          sudo mv $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib_new $(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib
-
           CPU=darwin_x86_64 make
-          LIBEDGETPU_FILE="out/direct/darwin_x86_64/libedgetpu.1.0.dylib"
-          LIBUSB_IN_LIBEDGETPU="$(otool -L "${LIBEDGETPU_FILE}" | grep libusb | awk -F' \\(compatibility' '/,/{gsub(/[ \t]/, "", $1);print $1}')"
-          LIBUSB="@loader_path/libusb-1.0.0.dylib"
-          if [ "${LIBUSB_IN_LIBEDGETPU}" != "${LIBUSB}" ]; then
-            install_name_tool -change "${LIBUSB_IN_LIBEDGETPU}" "${LIBUSB}" "${LIBEDGETPU_FILE}"
-          fi
-          LIBEDGETPU_FILE="out/throttled/darwin_x86_64/libedgetpu.1.0.dylib"
-          LIBUSB_IN_LIBEDGETPU="$(otool -L "${LIBEDGETPU_FILE}" | grep libusb | awk -F' \\(compatibility' '/,/{gsub(/[ \t]/, "", $1);print $1}')"
-          LIBUSB="@loader_path/libusb-1.0.0.dylib"
-          if [ "${LIBUSB_IN_LIBEDGETPU}" != "${LIBUSB}" ]; then
-            install_name_tool -change "${LIBUSB_IN_LIBEDGETPU}" "${LIBUSB}" "${LIBEDGETPU_FILE}"
-          fi
 
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
 
           export LIBEDGETPU_NAME=darwin_arm64
-          export TRIPLET=arm64-apple-darwin
+          export TRIPLET=aarch64-apple-darwin
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
           export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
