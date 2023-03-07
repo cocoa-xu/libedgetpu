@@ -80,8 +80,10 @@ jobs:
 
       - name: codesign
         run: |
-          codesign -f --sign - "$(pwd)/out/direct/arm64-apple-darwin/libedgetpu.1.0.dylib"
-          codesign -f --sign - "$(pwd)/out/direct/x86_64-apple-darwin/libedgetpu.1.0.dylib"
+          codesign -f --sign - "$(pwd)/out/direct/darwin_arm64/libedgetpu.1.0.dylib"
+          codesign -f --sign - "$(pwd)/out/direct/darwin_x86_64/libedgetpu.1.0.dylib"
+          codesign -f --sign - "$(pwd)/out/throttled/darwin_arm64/libedgetpu.1.0.dylib"
+          codesign -f --sign - "$(pwd)/out/throttled/darwin_x86_64/libedgetpu.1.0.dylib"
 
       - name: Release
         run: |
