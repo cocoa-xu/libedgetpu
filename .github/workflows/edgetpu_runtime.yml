@@ -31,35 +31,35 @@ jobs:
           export LIBEDGETPU_NAME=k8
           export TRIPLET=x86_64-linux-gnu
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
+          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=armv7a
           export TRIPLET=armv7l-linux-gnueabihf
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
+          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=aarch64
           export TRIPLET=aarch64-linux-gnu
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
+          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=riscv64
           export TRIPLET=riscv64-linux-gnu
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
+          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: "edgetpu_runtime_*.zip"
+          files: "edgetpu_runtime_*.tar.gz"
 
   build_macos:
     runs-on: macos-11
@@ -85,18 +85,18 @@ jobs:
           export LIBEDGETPU_NAME=darwin_arm64
           export TRIPLET=aarch64-apple-darwin
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
+          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
           export LIBEDGETPU_NAME=darwin_x86_64
           export TRIPLET=x86_64-apple-darwin
           bash scripts/pack.sh out "${LIBEDGETPU_NAME}" "${TRIPLET}" "${PACK_DIR}"
-          export ZIP_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
-          zip -r -9 -y "${ZIP_FILENAME}.zip" "${PACK_DIR}"
+          export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
+          tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: "edgetpu_runtime_*.zip"
+          files: "edgetpu_runtime_*.tar.gz"
