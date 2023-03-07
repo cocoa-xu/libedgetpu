@@ -95,7 +95,7 @@ def _libusb_impl(ctx):
         build_file_content = """
 cc_library(
   name = "headers",
-  linkopts = ["-l:libusb-1.0.so"],
+  linkopts = ["-l:libusb-1.0.a"],
   visibility = ["//visibility:public"],
 )
 """
@@ -127,7 +127,7 @@ cc_library(
   name = "headers",
   includes = ["root/include"],
   hdrs = ["root/include/libusb-1.0/libusb.h"],
-  srcs = ["root/lib/libusb-1.0.dylib"],
+  srcs = ["root/lib/libusb-1.0.a"],
   visibility = ["//visibility:public"],
 )
 """
