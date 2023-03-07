@@ -21,24 +21,26 @@ jobs:
     env:
       LIBUSB_VER: "1.0.26"
       USE_BAZEL_VERSION: "5.4.0"
-    matrix:
-      pair:
-        - host: "x86_64-linux-gnu"
-          cc: "gcc"
-          cpu: "k8"
-          c_compiler: gcc
-        - host: "armv7l-linux-gnueabihf"
-          cc: "arm-linux-gnueabihf-gcc-9"
-          cpu: "armv7a"
-          c_compiler: gcc-arm-linux-gnueabihf
-        - host: "aarch64-linux-gnu"
-          cc: "aarch64-linux-gnu-gcc"
-          cpu: "aarch64"
-          c_compiler: gcc-aarch64-linux-gnu
-        - host: "riscv64-linux-gnu"
-          cc: "riscv64-linux-gnu-gcc"
-          cpu: "riscv64"
-          c_compiler: gcc-riscv64-linux-gnu
+    strategy:
+      fail-fast: false
+      matrix:
+        pair:
+          - host: "x86_64-linux-gnu"
+            cc: "gcc"
+            cpu: "k8"
+            c_compiler: gcc
+          - host: "armv7l-linux-gnueabihf"
+            cc: "arm-linux-gnueabihf-gcc-9"
+            cpu: "armv7a"
+            c_compiler: gcc-arm-linux-gnueabihf
+          - host: "aarch64-linux-gnu"
+            cc: "aarch64-linux-gnu-gcc"
+            cpu: "aarch64"
+            c_compiler: gcc-aarch64-linux-gnu
+          - host: "riscv64-linux-gnu"
+            cc: "riscv64-linux-gnu-gcc"
+            cpu: "riscv64"
+            c_compiler: gcc-riscv64-linux-gnu
 
     steps:
       - uses: actions/checkout@v3
