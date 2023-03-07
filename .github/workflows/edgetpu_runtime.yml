@@ -56,7 +56,7 @@ jobs:
           cd "libusb-${LIBUSB_VER}"
           ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/usr
           make -j`nproc`
-          make install
+          sudo make install
 
       - name: Compile libedgetpu
         run: |
