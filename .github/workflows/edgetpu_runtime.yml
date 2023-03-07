@@ -54,7 +54,6 @@ jobs:
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
           cd "libusb-${LIBUSB_VER}"
-          ./autogen.sh CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/usr
           ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/usr
           make -j`nproc`
           make install
