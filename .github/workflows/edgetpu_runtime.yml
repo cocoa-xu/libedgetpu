@@ -78,6 +78,11 @@ jobs:
           CPU=darwin_arm64 make
           CPU=darwin_x86_64 make
 
+      - name: codesign
+        run: |
+          codesign -f --sign - "$(pwd)/out/direct/arm64-apple-darwin/libedgetpu.1.0.dylib"
+          codesign -f --sign - "$(pwd)/out/direct/x86_64-apple-darwin/libedgetpu.1.0.dylib"
+
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
