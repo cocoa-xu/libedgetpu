@@ -85,7 +85,7 @@ jobs:
           cd "libusb-${LIBUSB_VER}"
           ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix="${LIBUSB_INSTALL_DIR}"
           make -j`nproc`
-          make DESTDIR="${LIBUSB_INSTALL_DIR}" install
+          make install
           PKG_CONFIG_PATH="${LIBUSB_INSTALL_DIR}/lib/pkgconfig" pkg-config --cflags-only-I libusb-1.0
 
       - name: Compile libedgetpu
