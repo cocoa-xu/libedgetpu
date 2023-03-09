@@ -21,8 +21,12 @@ ARCH := $(shell uname -p)
 
 ifeq ($(OS),Linux)
 CPU ?= k8
+ABI ?= gnu
+OSSmall ?= linux
 sha256_check = echo "$(1)  $(2)" | sha256sum --check -
 else ifeq ($(OS),Darwin)
+ABI ?= darwin
+OSSmall ?= apple
 ifeq ($(ARCH),arm)
 CPU ?= darwin_arm64
 else
@@ -33,8 +37,8 @@ else
 $(error $(OS) is not supported)
 endif
 
-ifeq ($(filter $(CPU),k8 armv7a aarch64 riscv64 darwin_arm64 darwin_x86_64),)
-$(error CPU must be k8, armv7a, aarch64, riscv64, darwin_arm64, or darwin_x86_64)
+ifeq ($(filter $(CPU),k8 armv7a arm64 aarch64 riscv64 darwin_arm64 darwin_x86_64),)
+$(error CPU must be k8, armv7a, arm64, aarch64, riscv64, darwin_arm64, or darwin_x86_64)
 endif
 
 COMPILATION_MODE ?= opt
@@ -53,7 +57,7 @@ USBDK_URL := https://github.com/daynix/UsbDk/releases/download/v1.00-22/UsbDk_1.
 USBDK_SHA256 := 91f6f695e1e13c656024e6d3b55620bf08d8835ef05ee0496935ba6bb62466a5
 LIBEDGETPU_BIN ?= $(MAKEFILE_DIR)/out/
 
-BAZEL_OUT_DIR := $(MAKEFILE_DIR)/bazel-out/$(CPU)-$(COMPILATION_MODE)/bin
+BAZEL_OUT_DIR := $(MAKEFILE_DIR)/bazel-out/$(CPU)-$(ABI)-$(COMPILATION_MODE)/bin
 
 # Linux-specific parameters
 BAZEL_BUILD_TARGET_Linux := //tflite/public:libedgetpu_direct_all.so$(STRIPPED_SUFFIX)
@@ -72,6 +76,16 @@ BAZEL_BUILD_FLAGS = \
   --cpu=$(CPU) \
   --embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
   --stamp
+
+ifeq ($(ABI),musl)
+BAZEL_BUILD_FLAGS = \
+	--stripopt=-x \
+	--compilation_mode=$(COMPILATION_MODE) \
+	--platforms=@zig_sdk//platform:$(OSSmall)_$(CPU)_$(ABI) \
+	--extra_toolchains=@zig_sdk//toolchain:$(OSSmall)_$(CPU)_$(ABI) \
+	--embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
+	--stamp
+endif
 
 BAZEL_BUILD_TARGET := $(BAZEL_BUILD_TARGET_$(OS))
 BAZEL_BUILD_OUTPUT_FILE := $(BAZEL_BUILD_OUTPUT_FILE_$(OS))
