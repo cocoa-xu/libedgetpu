@@ -28,6 +28,8 @@ jobs:
     env:
       LIBUSB_VER: "1.0.26"
       USE_BAZEL_VERSION: "5.4.0"
+      ZIG_VERSION: "0.10.1"
+
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +58,12 @@ jobs:
             cpu: "riscv64"
             c_compiler: gcc-riscv64-linux-gnu
             cpp_compiler: g++-riscv64-linux-gnu
+          - host: "riscv64-linux-musl"
+            cc: "zig cc -target riscv64-linux-musl"
+            cxx: "zig c++ -target riscv64-linux-musl"
+            cpu: "riscv64"
+            c_compiler: ""
+            cpp_compiler: ""
 
     steps:
       - uses: actions/checkout@v3
@@ -64,20 +72,32 @@ jobs:
         run: |
           sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 unzip zip curl git gzip python3 python3-numpy ca-certificates ${{ matrix.pair.c_compiler }} ${{ matrix.pair.cpp_compiler }}
 
+      - name: Install Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
       - name: Compile libusb
         run: |
+          export LIBUSB_INSTALL_DIR="$(pwd)/libusb"
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
           cd "libusb-${LIBUSB_VER}"
-          ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/usr
+          ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/
           make -j`nproc`
-          sudo make install
+          make DESTDIR="${LIBUSB_INSTALL_DIR}" install
 
       - name: Compile libedgetpu
         run: |
-          export CC="${{ matrix.pair.cc }}"
-          export CXX="${{ matrix.pair.cxx }}"
-          CPU="${{ matrix.pair.cpu }}" make libedgetpu
+          export PKG_CONFIG_PATH="$(pwd)/libusb/lib/pkgconfig"
+          echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
+          if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
+            CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
+          else
+            export CC="${{ matrix.pair.cc }}"
+            export CXX="${{ matrix.pair.cxx }}"
+            CPU="${{ matrix.pair.cpu }}" make libedgetpu
+          fi
 
       - name: Release
         run: |

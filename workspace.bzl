@@ -88,15 +88,29 @@ def _port_libusb_path(ctx):
 
     return port.dirname.dirname
 
+def _pkg_config_libusb_path(ctx):
+    res = ctx.execute(["/bin/bash", "-c", "which pkg-config"])
+    if res.return_code != 0:
+        return None
+    pkg_config = ctx.path(res.stdout.strip())
+
+    res = ctx.execute([pkg_config, "--cflags-only-I", "libusb-1.0"])
+    if res.return_code != 0:
+        return None
+
+    return res.stdout.strip()[2:-19]
+
 def _libusb_impl(ctx):
     lower_name = ctx.os.name.lower()
     if lower_name.startswith("linux"):
-        path = None
+        path = _pkg_config_libusb_path(ctx)
         build_file_content = """
 cc_library(
   name = "headers",
-  linkopts = ["-l:libusb-1.0.a"],
+  srcs = ["root/lib/libusb-1.0.a"],
   visibility = ["//visibility:public"],
+  includes = ["root/include"],
+  hdrs = ["root/include/libusb-1.0/libusb.h"],
 )
 """
     elif lower_name.startswith("windows"):
