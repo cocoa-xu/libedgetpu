@@ -41,6 +41,13 @@ ifeq ($(filter $(CPU),k8 armv7a arm64 aarch64 riscv64 darwin_arm64 darwin_x86_64
 $(error CPU must be k8, armv7a, arm64, aarch64, riscv64, darwin_arm64, or darwin_x86_64)
 endif
 
+ifeq ($(ABI),musl)
+ZIG_CPU = $(CPU)
+ifeq ($(CPU),aarch64)
+ZIG_CPU = arm64
+endif
+endif
+
 COMPILATION_MODE ?= opt
 ifeq ($(filter $(COMPILATION_MODE),opt dbg),)
 $(error COMPILATION_MODE must be opt or dbg)
@@ -86,8 +93,8 @@ BAZEL_BUILD_FLAGS = \
 	--cxxopt="-fPIC" \
   	--copt="-fPIC" \
 	--cpu=$(CPU) \
-	--platforms=@zig_sdk//platform:$(OSSmall)_$(CPU)_$(ABI) \
-	--extra_toolchains=@zig_sdk//toolchain:$(OSSmall)_$(CPU)_$(ABI) \
+	--platforms=@zig_sdk//platform:$(OSSmall)_$(ZIG_CPU)_$(ABI) \
+	--extra_toolchains=@zig_sdk//toolchain:$(OSSmall)_$(ZIG_CPU)_$(ABI) \
 	--incompatible_enable_cc_toolchain_resolution=true \
 	--incompatible_use_cc_configure_from_rules_cc=true \
 	--embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
