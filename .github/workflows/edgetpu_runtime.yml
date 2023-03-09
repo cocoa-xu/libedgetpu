@@ -86,11 +86,14 @@ jobs:
           ./configure CFLAGS="-fPIC" CC="${{ matrix.pair.cc }}" --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix=/
           make -j`nproc`
           make DESTDIR="${LIBUSB_INSTALL_DIR}" install
+          PKG_CONFIG_PATH="${LIBUSB_INSTALL_DIR}/lib/pkgconfig" pkg-config --cflags-only-I libusb-1.0
 
       - name: Compile libedgetpu
         run: |
           export PKG_CONFIG_PATH="$(pwd)/libusb/lib/pkgconfig"
           echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
+          pkg-config --cflags-only-I libusb-1.0
+
           if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
           else
