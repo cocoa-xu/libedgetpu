@@ -47,7 +47,9 @@ $(error COMPILATION_MODE must be opt or dbg)
 endif
 
 ifeq ($(COMPILATION_MODE),opt)
+ifneq ($(ABI),musl)
 STRIPPED_SUFFIX = .stripped
+endif
 endif
 
 EDGETPU_RUNTIME_DIR := /tmp/edgetpu_runtime
@@ -57,7 +59,7 @@ USBDK_URL := https://github.com/daynix/UsbDk/releases/download/v1.00-22/UsbDk_1.
 USBDK_SHA256 := 91f6f695e1e13c656024e6d3b55620bf08d8835ef05ee0496935ba6bb62466a5
 LIBEDGETPU_BIN ?= $(MAKEFILE_DIR)/out/
 
-BAZEL_OUT_DIR := $(MAKEFILE_DIR)/bazel-out/$(CPU)-$(ABI)-$(COMPILATION_MODE)/bin
+BAZEL_OUT_DIR := $(MAKEFILE_DIR)/bazel-out/$(CPU)-$(COMPILATION_MODE)/bin
 
 # Linux-specific parameters
 BAZEL_BUILD_TARGET_Linux := //tflite/public:libedgetpu_direct_all.so$(STRIPPED_SUFFIX)
@@ -81,6 +83,9 @@ ifeq ($(ABI),musl)
 BAZEL_BUILD_FLAGS = \
 	--stripopt=-x \
 	--compilation_mode=$(COMPILATION_MODE) \
+	--cxxopt="-fPIC" \
+  	--copt="-fPIC" \
+	--cpu=$(CPU) \
 	--platforms=@zig_sdk//platform:$(OSSmall)_$(CPU)_$(ABI) \
 	--extra_toolchains=@zig_sdk//toolchain:$(OSSmall)_$(CPU)_$(ABI) \
 	--embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
