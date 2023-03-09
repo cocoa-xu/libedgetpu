@@ -52,6 +52,12 @@ jobs:
             cpu: "aarch64"
             c_compiler: gcc-aarch64-linux-gnu
             cpp_compiler: g++-aarch64-linux-gnu
+          - host: "aarch64-linux-musl"
+            cc: "zig cc -target aarch64-linux-musl"
+            cxx: "zig c++ -target aarch64-linux-musl"
+            cpu: "aarch64"
+            c_compiler: ""
+            cpp_compiler: ""
           - host: "riscv64-linux-gnu"
             cc: "riscv64-linux-gnu-gcc"
             cxx: "riscv64-linux-gnu-g++"
