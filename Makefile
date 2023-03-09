@@ -46,11 +46,11 @@ ifeq ($(filter $(COMPILATION_MODE),opt dbg),)
 $(error COMPILATION_MODE must be opt or dbg)
 endif
 
-ifeq ($(COMPILATION_MODE),opt)
-ifneq ($(ABI),musl)
-STRIPPED_SUFFIX = .stripped
-endif
-endif
+# ifeq ($(COMPILATION_MODE),opt)
+# ifneq ($(ABI),musl)
+# STRIPPED_SUFFIX = .stripped
+# endif
+# endif
 
 EDGETPU_RUNTIME_DIR := /tmp/edgetpu_runtime
 LIBUSB_URL := https://github.com/libusb/libusb/releases/download/v1.0.24/libusb-1.0.24.7z
