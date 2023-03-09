@@ -88,6 +88,8 @@ BAZEL_BUILD_FLAGS = \
 	--cpu=$(CPU) \
 	--platforms=@zig_sdk//platform:$(OSSmall)_$(CPU)_$(ABI) \
 	--extra_toolchains=@zig_sdk//toolchain:$(OSSmall)_$(CPU)_$(ABI) \
+	--incompatible_enable_cc_toolchain_resolution=true \
+	--incompatible_use_cc_configure_from_rules_cc=true \
 	--embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
 	--stamp
 endif
