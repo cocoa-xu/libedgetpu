@@ -37,8 +37,8 @@ else
 $(error $(OS) is not supported)
 endif
 
-ifeq ($(filter $(CPU),k8 armv7a arm64 aarch64 riscv64 darwin_arm64 darwin_x86_64),)
-$(error CPU must be k8, armv7a, arm64, aarch64, riscv64, darwin_arm64, or darwin_x86_64)
+ifeq ($(filter $(CPU),k8 armv6 armv7a arm64 aarch64 riscv64 darwin_arm64 darwin_x86_64),)
+$(error CPU must be k8, armv6, armv7a, arm64, aarch64, riscv64, darwin_arm64, or darwin_x86_64)
 endif
 
 ifeq ($(ABI),musl)

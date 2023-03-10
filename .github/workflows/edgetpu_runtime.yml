@@ -41,9 +41,15 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
           - host: "armv7l-linux-gnueabihf"
-            cc: "arm-linux-gnueabihf-gcc-9"
-            cxx: "arm-linux-gnueabihf-g++-9"
+            cc: "arm-linux-gnueabihf-gcc"
+            cxx: "arm-linux-gnueabihf-g++"
             cpu: "armv7a"
+            c_compiler: gcc-arm-linux-gnueabihf
+            cpp_compiler: g++-arm-linux-gnueabihf
+          - host: "armv6-linux-gnueabihf"
+            cc: "arm-linux-gnueabihf-gcc"
+            cxx: "arm-linux-gnueabihf-g++"
+            cpu: "armv6"
             c_compiler: gcc-arm-linux-gnueabihf
             cpp_compiler: g++-arm-linux-gnueabihf
           - host: "aarch64-linux-gnu"
@@ -89,7 +95,11 @@ jobs:
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
           cd "libusb-${LIBUSB_VER}"
-          CC="${{ matrix.pair.cc }}" CFLAGS="-fPIC" ./configure --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix="${LIBUSB_INSTALL_DIR}"
+          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
+            CC="${{ matrix.pair.cc }}" CFLAGS="-fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard" ./configure --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix="${LIBUSB_INSTALL_DIR}"
+          else
+            CC="${{ matrix.pair.cc }}" CFLAGS="-fPIC" ./configure --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix="${LIBUSB_INSTALL_DIR}"
+          fi
           make -j`nproc`
           make install
           PKG_CONFIG_PATH="${LIBUSB_INSTALL_DIR}/lib/pkgconfig" pkg-config --cflags-only-I libusb-1.0
@@ -105,6 +115,10 @@ jobs:
           else
             export CC="${{ matrix.pair.cc }}"
             export CXX="${{ matrix.pair.cxx }}"
+            if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
+              export CC="${{ matrix.pair.cc }} -fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard"
+              export CXX="${{ matrix.pair.cxx }} -fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard"
+            fi
             CPU="${{ matrix.pair.cpu }}" make libedgetpu
           fi
 
