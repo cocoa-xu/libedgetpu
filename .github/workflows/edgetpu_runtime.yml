@@ -115,10 +115,6 @@ jobs:
           else
             export CC="${{ matrix.pair.cc }}"
             export CXX="${{ matrix.pair.cxx }}"
-            if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-              export CC="${{ matrix.pair.cc }} -fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard"
-              export CXX="${{ matrix.pair.cxx }} -fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard"
-            fi
             CPU="${{ matrix.pair.cpu }}" make libedgetpu
           fi
 

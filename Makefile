@@ -86,6 +86,17 @@ BAZEL_BUILD_FLAGS = \
   --embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
   --stamp
 
+ifeq ($(CPU),armv6)
+BAZEL_BUILD_FLAGS = \
+  --stripopt=-x \
+  --compilation_mode=$(COMPILATION_MODE) \
+  --cxxopt="-fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard" \
+  --copt="-fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard" \
+  --cpu=$(CPU) \
+  --embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
+  --stamp
+endif
+
 ifeq ($(ABI),musl)
 BAZEL_BUILD_FLAGS = \
 	--stripopt=-x \
