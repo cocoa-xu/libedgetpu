@@ -129,7 +129,7 @@ jobs:
             cp -f ../error_codes.armv6.h port/default/error_codes.h
             cp -f ../Makefile ./Makefile
             cp -f ../workspace.bzl ./workspace.bzl
-            cp -rf ../libusb ./libusb
+            cp -rf /tmp/libusb ./libusb
             export PKG_CONFIG_PATH="$(pwd)/libusb/lib/pkgconfig"
             echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
             pkg-config --cflags-only-I libusb-1.0 || true
