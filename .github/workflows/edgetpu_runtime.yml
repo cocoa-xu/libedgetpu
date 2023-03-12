@@ -119,11 +119,13 @@ jobs:
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
           elif [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
             cp workspace.armv6.bzl ../workspace.armv6.bzl
-            cp libedgetpu_cc_rules.armv6.bzl ../libedgetpu_cc_rules.armv6.bzl
+            cp Makefile.armv6 ../Makefile.armv6
+            cp error_codes.armv6.h ../error_codes.armv6.h
             cp scripts/pack.sh ../pack.sh
-            git checkout 14eee1a076aa1af7ec1ae3c752be79ae2604a708
+            git checkout efb73cc94dac29dc590a243109d4654c223e008c
             cp -f ../workspace.armv6.bzl ./workspace.bzl
-            cp -f ../libedgetpu_cc_rules.armv6.bzl ./libedgetpu_cc_rules.bzl
+            cp -f ../Makefile.armv6 ./Makefile
+            cp ../error_codes.armv6.h port/default/error_codes.h
             cp -rf ../libusb ./libusb
             DOCKER_CPUS="armv6" DOCKER_TARGETS=libedgetpu make docker-build
           else
