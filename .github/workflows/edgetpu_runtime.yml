@@ -120,6 +120,7 @@ jobs:
           elif [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
             cp workspace.armv6.bzl ../workspace.armv6.bzl
             cp libedgetpu_cc_rules.armv6.bzl ../libedgetpu_cc_rules.armv6.bzl
+            cp scripts/pack.sh ../pack.sh
             git checkout 14eee1a076aa1af7ec1ae3c752be79ae2604a708
             cp -f ../workspace.armv6.bzl ./workspace.bzl
             cp -f ../libedgetpu_cc_rules.armv6.bzl ./libedgetpu_cc_rules.bzl
@@ -134,6 +135,10 @@ jobs:
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
+
+          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
+            cp ../pack.sh scripts/pack.sh
+          fi
 
           export LIBEDGETPU_NAME="${{ matrix.pair.cpu }}"
           export TRIPLET="${{ matrix.pair.host }}"
