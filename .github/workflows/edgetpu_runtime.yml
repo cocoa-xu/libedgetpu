@@ -93,9 +93,6 @@ jobs:
 
       - name: Compile libusb
         run: |
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cd ..
-          fi
           export LIBUSB_INSTALL_DIR="$(pwd)/libusb"
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
@@ -108,6 +105,9 @@ jobs:
           make -j`nproc`
           make install
           PKG_CONFIG_PATH="${LIBUSB_INSTALL_DIR}/lib/pkgconfig" pkg-config --cflags-only-I libusb-1.0
+          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
+            mv libusb ../
+          fi
 
       - name: Compile libedgetpu
         run: |
@@ -122,13 +122,18 @@ jobs:
             cp error_codes.armv6.h ../error_codes.armv6.h
             cp driver/usb/BUILD.armv6 ../BUILD.armv6
             cp Makefile ../Makefile
+            cp workspace.bzl ../workspace.bzl
             cp scripts/pack.sh ../pack.sh
             git checkout 3164995622300286ef2bb14d7fdc2792dae045b7
             cp -f ../WORKSPACE.armv6 ./WORKSPACE
             cp -f ../error_codes.armv6.h port/default/error_codes.h
             cp -f ../BUILD.armv6 driver/usb/BUILD
             cp -f ../Makefile ./Makefile
+            cp -f ../workspace.bzl ./workspace.bzl
             cp -rf ../libusb ./libusb
+            export PKG_CONFIG_PATH="$(pwd)/libusb/lib/pkgconfig"
+            echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
+            pkg-config --cflags-only-I libusb-1.0 || true
             CPU="armv6" make libedgetpu
           else
             export CC="${{ matrix.pair.cc }}"
