@@ -48,6 +48,11 @@ ZIG_CPU = arm64
 endif
 endif
 
+ifeq ($(CPU),armv6)
+ZIG_CPU = arm
+ABI = gnueabihf.2.28
+endif
+
 COMPILATION_MODE ?= opt
 ifeq ($(filter $(COMPILATION_MODE),opt dbg),)
 $(error COMPILATION_MODE must be opt or dbg)
@@ -90,9 +95,21 @@ ifeq ($(CPU),armv6)
 BAZEL_BUILD_FLAGS = \
   --stripopt=-x \
   --compilation_mode=$(COMPILATION_MODE) \
-  --cxxopt="-fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard" \
-  --copt="-fPIC -march=armv6 -mfpu=vfp -marm -mabi=aapcs-linux -mfloat-abi=hard" \
+  --cxxopt="-fPIC" \
+  --cxxopt="-mfpu=vfp" \
+  --cxxopt="-marm" \
+  --cxxopt="-mabi=aapcs-linux" \
+  --cxxopt="-mfloat-abi=hard" \
+  --copt="-fPIC" \
+  --copt="-mfpu=vfp" \
+  --copt="-marm" \
+  --copt="-mabi=aapcs-linux" \
+  --copt="-mfloat-abi=hard" \
   --cpu=$(CPU) \
+  --platforms=@zig_sdk//libc_aware/platform:$(OSSmall)_$(ZIG_CPU)_$(ABI) \
+  --extra_toolchains=@zig_sdk//libc_aware/toolchain:$(OSSmall)_$(ZIG_CPU)_$(ABI) \
+  --incompatible_enable_cc_toolchain_resolution=true \
+  --incompatible_use_cc_configure_from_rules_cc=true \
   --embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
   --stamp
 endif
@@ -192,7 +209,7 @@ clean:
 DOCKER_CONTEXT_DIR := $(MAKEFILE_DIR)/docker
 DOCKER_WORKSPACE := $(MAKEFILE_DIR)
 DOCKER_CONTAINER_WORKSPACE := /workspace
-DOCKER_CPUS ?= k8 armv7a aarch64 riscv64
+DOCKER_CPUS ?= k8 armv6 armv7a aarch64 riscv64
 DOCKER_TARGETS ?=
 DOCKER_IMAGE ?= ubuntu:20.04
 DOCKER_TAG_BASE ?= libedgetpu-cross
