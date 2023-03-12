@@ -95,16 +95,24 @@ ifeq ($(CPU),armv6)
 BAZEL_BUILD_FLAGS = \
   --stripopt=-x \
   --compilation_mode=$(COMPILATION_MODE) \
-  --cxxopt="-fPIC" \
+  --cxxopt="-mabi=aapcs-linux" \
   --cxxopt="-mfpu=vfp" \
   --cxxopt="-marm" \
-  --cxxopt="-mabi=aapcs-linux" \
+  --cxxopt="-fstack-protector-strong" \
   --cxxopt="-mfloat-abi=hard" \
-  --copt="-fPIC" \
+  --cxxopt="-mcpu=arm1176jzf_s" \
+  --cxxopt="-fPIE" \
+  --cxxopt="-pie" \
+  --cxxopt="-Wl,-z,now -Wl,-z,relro" \
+  --copt="-mabi=aapcs-linux" \
   --copt="-mfpu=vfp" \
   --copt="-marm" \
-  --copt="-mabi=aapcs-linux" \
+  --copt="-fstack-protector-strong" \
   --copt="-mfloat-abi=hard" \
+  --copt="-mcpu=arm1176jzf_s" \
+  --copt="-fPIE" \
+  --copt="-pie" \
+  --copt="-Wl,-z,now -Wl,-z,relro" \
   --cpu=$(CPU) \
   --platforms=@zig_sdk//libc_aware/platform:$(OSSmall)_$(ZIG_CPU)_$(ABI) \
   --extra_toolchains=@zig_sdk//libc_aware/toolchain:$(OSSmall)_$(ZIG_CPU)_$(ABI) \
