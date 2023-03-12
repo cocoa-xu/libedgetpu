@@ -91,6 +91,9 @@ jobs:
 
       - name: Compile libusb
         run: |
+          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
+            cd ..
+          fi
           export LIBUSB_INSTALL_DIR="$(pwd)/libusb"
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
@@ -108,7 +111,7 @@ jobs:
         run: |
           export PKG_CONFIG_PATH="$(pwd)/libusb/lib/pkgconfig"
           echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
-          pkg-config --cflags-only-I libusb-1.0
+          pkg-config --cflags-only-I libusb-1.0 || true
 
           if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
@@ -118,6 +121,7 @@ jobs:
             git checkout 14eee1a076aa1af7ec1ae3c752be79ae2604a708
             cp -f ../workspace.armv6.bzl ./workspace.bzl
             cp -f ../libedgetpu_cc_rules.armv6.bzl ./libedgetpu_cc_rules.bzl
+            cp -rf ../libusb ./libusb
             DOCKER_CPUS="armv6" DOCKER_TARGETS=libedgetpu make docker-build
           else
             export CC="${{ matrix.pair.cc }}"
