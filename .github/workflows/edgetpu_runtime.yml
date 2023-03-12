@@ -93,9 +93,6 @@ jobs:
 
       - name: Compile libusb
         run: |
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cd ..
-          fi
           export LIBUSB_INSTALL_DIR="$(pwd)/libusb"
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
@@ -118,16 +115,9 @@ jobs:
           if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
           elif [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cp workspace.armv6.bzl ../workspace.armv6.bzl
-            cp Makefile.armv6 ../Makefile.armv6
-            cp error_codes.armv6.h ../error_codes.armv6.h
-            cp scripts/pack.sh ../pack.sh
-            git checkout efb73cc94dac29dc590a243109d4654c223e008c
-            cp -f ../workspace.armv6.bzl ./workspace.bzl
-            cp -f ../Makefile.armv6 ./Makefile
-            cp ../error_codes.armv6.h port/default/error_codes.h
-            cp -rf ../libusb ./libusb
-            DOCKER_CPUS="armv6" DOCKER_TARGETS=libedgetpu make docker-build
+            cp WORKSPACE.armv6 ./WORKSPACE
+            cp error_codes.armv6.h port/default/error_codes.h
+            CPU="armv6" make libedgetpu
           else
             export CC="${{ matrix.pair.cc }}"
             export CXX="${{ matrix.pair.cxx }}"
@@ -137,10 +127,6 @@ jobs:
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
-
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cp ../pack.sh scripts/pack.sh
-          fi
 
           export LIBEDGETPU_NAME="${{ matrix.pair.cpu }}"
           export TRIPLET="${{ matrix.pair.host }}"
