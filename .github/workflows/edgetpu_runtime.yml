@@ -121,11 +121,17 @@ jobs:
             cp workspace.armv6.bzl ../workspace.armv6.bzl
             cp Makefile.armv6 ../Makefile.armv6
             cp error_codes.armv6.h ../error_codes.armv6.h
+            cp .bazelrc.armv6 ../.bazelrc.armv6
+            cp driver/usb/BUILD.armv6 ../BUILD.armv6
+            cp docker/Dockerfile.armv6 ../Dockerfile.armv6
             cp scripts/pack.sh ../pack.sh
-            git checkout efb73cc94dac29dc590a243109d4654c223e008c
+            git checkout 3164995622300286ef2bb14d7fdc2792dae045b7
             cp -f ../workspace.armv6.bzl ./workspace.bzl
             cp -f ../Makefile.armv6 ./Makefile
-            cp ../error_codes.armv6.h port/default/error_codes.h
+            cp -f ../error_codes.armv6.h port/default/error_codes.h
+            cp -f ../.bazelrc.armv6 .bazelrc
+            cp -f ../BUILD.armv6 driver/usb/BUILD
+            cp -f ../Dockerfile.armv6 docker/Dockerfile
             cp -rf ../libusb ./libusb
             DOCKER_CPUS="armv6" DOCKER_TARGETS=libedgetpu make docker-build
           else
