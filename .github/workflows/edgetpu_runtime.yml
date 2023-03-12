@@ -105,10 +105,6 @@ jobs:
           make -j`nproc`
           make install
           PKG_CONFIG_PATH="${LIBUSB_INSTALL_DIR}/lib/pkgconfig" pkg-config --cflags-only-I libusb-1.0
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            rm -rf /tmp/libusb
-            mv "${LIBUSB_INSTALL_DIR}" /tmp/
-          fi
 
       - name: Compile libedgetpu
         run: |
@@ -119,20 +115,8 @@ jobs:
           if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
           elif [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cp WORKSPACE.armv6 ../WORKSPACE.armv6
-            cp error_codes.armv6.h ../error_codes.armv6.h
-            cp Makefile ../Makefile
-            cp workspace.bzl ../workspace.bzl
-            cp scripts/pack.sh ../pack.sh
-            git checkout 3164995622300286ef2bb14d7fdc2792dae045b7
-            cp -f ../WORKSPACE.armv6 ./WORKSPACE
-            cp -f ../error_codes.armv6.h port/default/error_codes.h
-            cp -f ../Makefile ./Makefile
-            cp -f ../workspace.bzl ./workspace.bzl
-            cp -rf /tmp/libusb ./libusb
-            export PKG_CONFIG_PATH="$(pwd)/libusb/lib/pkgconfig"
-            echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
-            pkg-config --cflags-only-I libusb-1.0 || true
+            cp WORKSPACE.armv6 ./WORKSPACE
+            cp error_codes.armv6.h port/default/error_codes.h
             CPU="armv6" make libedgetpu
           else
             export CC="${{ matrix.pair.cc }}"
@@ -143,10 +127,6 @@ jobs:
       - name: Release
         run: |
           export PACK_DIR=edgetpu_runtime
-
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cp ../pack.sh scripts/pack.sh
-          fi
 
           export LIBEDGETPU_NAME="${{ matrix.pair.cpu }}"
           export TRIPLET="${{ matrix.pair.host }}"
