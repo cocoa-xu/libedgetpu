@@ -118,14 +118,12 @@ jobs:
           if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
           elif [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            cp workspace.armv6.bzl ../workspace.armv6.bzl
             cp WORKSPACE.armv6 ../WORKSPACE.armv6
             cp error_codes.armv6.h ../error_codes.armv6.h
             cp scripts/pack.sh ../pack.sh
             cp Makefile ../Makefile
             git checkout 3164995622300286ef2bb14d7fdc2792dae045b7
-            cp -f ../workspace.armv6.bzl ./workspace.bzl
-            cp -f ../WORKSPACE.armv6 ../WORKSPACE
+            cp -f ../WORKSPACE.armv6 ./WORKSPACE
             cp -f ../error_codes.armv6.h port/default/error_codes.h
             cp -f ../Makefile ./Makefile
             cp -rf ../libusb ./libusb
