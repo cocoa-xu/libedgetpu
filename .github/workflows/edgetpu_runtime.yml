@@ -115,6 +115,7 @@ jobs:
           if [[ "${{ matrix.pair.host }}" == *"musl"* ]]; then
             CPU="${{ matrix.pair.cpu }}" ABI=musl OSSmall=linux make libedgetpu
           elif [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
+            cp WORKSPACE.armv6 ./WORKSPACE
             cp error_codes.armv6.h port/default/error_codes.h
             CPU="armv6" make libedgetpu
           else
