@@ -245,7 +245,7 @@ def _impl(ctx):
                                 "-isystem",
                                 "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/libc/usr/include/",
                                 "-isystem",
-                                "/usr/include/",
+                                "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/sysroot/usr/include",
                             ],
                         ),
                     ],
@@ -334,13 +334,13 @@ def _impl(ctx):
 
     if (ctx.attr.cpu == "armv6"):
         cxx_builtin_include_directories = [
-                "%{ARMHF_COMPILER_PATH}%/lib/gcc/%{ARMHF_COMPILER_PREFIX}%/%{ARMHF_COMPILER_VERSION}%/include",
-                "%{ARMHF_COMPILER_PATH}%/lib/gcc/%{ARMHF_COMPILER_PREFIX}%/%{ARMHF_COMPILER_VERSION}%/include-fixed",
-                "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/include/c++/%{ARMHF_COMPILER_VERSION}%/",
-                "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/libc/usr/include/",
-                "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/sysroot/usr/",
-                "/usr/include",
-            ]
+            "%{ARMHF_COMPILER_PATH}%/lib/gcc/%{ARMHF_COMPILER_PREFIX}%/%{ARMHF_COMPILER_VERSION}%/include",
+            "%{ARMHF_COMPILER_PATH}%/lib/gcc/%{ARMHF_COMPILER_PREFIX}%/%{ARMHF_COMPILER_VERSION}%/include-fixed",
+            "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/include/c++/%{ARMHF_COMPILER_VERSION}%",
+            "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/libc/usr/include",
+            "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/sysroot/usr/include",
+            "%{ARMHF_COMPILER_PATH}%/%{ARMHF_COMPILER_PREFIX}%/sysroot",
+        ]
     else:
         fail("Unreachable")
 
