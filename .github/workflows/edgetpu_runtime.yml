@@ -97,10 +97,10 @@ jobs:
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
           cd "libusb-${LIBUSB_VER}"
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
-            wget https://github.com/nerves-project/toolchains/releases/download/v1.8.0/nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-1.8.0-BC50D6D.tar.xz -O nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-1.8.0-BC50D6D.tar.xz
-            tar xf nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-1.8.0-BC50D6D.tar.xz
-            export PATH="$(pwd)/nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-1.8.0/bin:${PATH}"
+          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then                                                                           
+            curl -fSL https://github.com/nerves-project/toolchains/releases/download/v13.2.0/nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0-363664F.tar.xz -o nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0-363664F.tar.xz
+            tar -xf nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0-363664F.tar.xz
+            export PATH="$(pwd)/nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0/bin:${PATH}"
             CC="armv6-nerves-linux-gnueabihf-gcc" CFLAGS="-mabi=aapcs-linux -mfpu=vfp -marm -fstack-protector-strong -mfloat-abi=hard -mcpu=arm1176jzf-s -fPIC -Wl,-z,now -Wl,-z,relro" ./configure --host="arm-linux-gnueabihf" --disable-static --enable-shared --disable-udev --prefix="${LIBUSB_INSTALL_DIR}"
           else
             CC="${{ matrix.pair.cc }}" CFLAGS="-fPIC" ./configure --host="${{ matrix.pair.host }}" --enable-static --disable-shared --disable-udev --prefix="${LIBUSB_INSTALL_DIR}"
