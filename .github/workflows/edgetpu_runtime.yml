@@ -78,7 +78,7 @@ jobs:
             cpp_compiler: ""
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -159,7 +159,7 @@ jobs:
             triplet: "x86_64-apple-darwin"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
