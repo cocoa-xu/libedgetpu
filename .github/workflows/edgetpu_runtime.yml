@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       LIBUSB_VER: "1.0.26"
-      USE_BAZEL_VERSION: "5.4.0"
+      USE_BAZEL_VERSION: "6.0.0"
       ZIG_VERSION: "0.10.1"
 
     strategy:
@@ -148,7 +148,7 @@ jobs:
   build_macos:
     runs-on: macos-11
     env:
-      USE_BAZEL_VERSION: "5.4.0"
+      USE_BAZEL_VERSION: "6.0.0"
     strategy:
       fail-fast: false
       matrix:
