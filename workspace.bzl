@@ -141,6 +141,7 @@ cc_library(
   name = "headers",
   includes = ["root/include"],
   hdrs = ["root/include/libusb-1.0/libusb.h"],
+  linkopts = ["-framework", "IOKit", "-framework", "Security"],
   srcs = ["root/lib/libusb-1.0.a"],
   visibility = ["//visibility:public"],
 )
