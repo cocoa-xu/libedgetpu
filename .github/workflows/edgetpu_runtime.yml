@@ -164,7 +164,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install libusb
-          pip3 install numpy
+          pip3 install numpy disutils
 
       - name: Compile
         run: |
