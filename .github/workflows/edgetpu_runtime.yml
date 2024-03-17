@@ -26,7 +26,7 @@ jobs:
   build_linux:
     runs-on: ubuntu-20.04
     env:
-      LIBUSB_VER: "1.0.26"
+      LIBUSB_VER: "1.0.27"
       USE_BAZEL_VERSION: "6.0.0"
       ZIG_VERSION: "0.10.1"
 
@@ -78,7 +78,8 @@ jobs:
             cpp_compiler: ""
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
