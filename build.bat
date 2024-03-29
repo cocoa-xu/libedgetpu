@@ -16,8 +16,9 @@ echo off
 setlocal
 
 if not defined PYTHON set PYTHON=python
-set BAZEL_VS=C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools
-set BAZEL_VC=C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC
+:: GitHub CI windows-2022
+set BAZEL_VS=C:\Program Files\Microsoft Visual Studio\2022\Enterprise
+set BAZEL_VC=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC
 call "%BAZEL_VC%\Auxiliary\Build\vcvars64.bat"
 
 for /f %%i in ('%PYTHON% -c "import sys;print(sys.executable)"') do set PYTHON_BIN_PATH=%%i
