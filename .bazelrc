@@ -11,6 +11,5 @@ build:linux --compiler=gcc
 build:macos --cxxopt=-std=c++14
 build:macos --copt=-fvisibility=hidden
 
-build:windows --incompatible_restrict_string_escapes=false
 build:windows --copt=/DWIN32_LEAN_AND_MEAN
 build:windows --cxxopt=/std:c++14
