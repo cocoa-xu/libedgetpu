@@ -1,0 +1,46 @@
+name: edgetpu-runtime-windows
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+        - '**/*.md'
+        - 'LICENSE*'
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - master
+      - test-*
+    paths-ignore:
+    - '**/*.md'
+    - 'LICENSE*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_windows:
+    runs-on: windows-2022
+    env:
+      USE_BAZEL_VERSION: "6.0.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Compile
+        shell: bash
+        run: |
+          ./build.bat
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
