@@ -176,7 +176,7 @@ jobs:
         run: |
           bazel clean --expunge 
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-          sudo xcodebuild -license
+          sudo xcodebuild -license accept
           bazel clean --expunge 
 
       - name: Compile
