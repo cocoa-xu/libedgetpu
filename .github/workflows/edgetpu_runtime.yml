@@ -170,7 +170,9 @@ jobs:
       - name: Install dependencies
         run: |
           brew install libusb
-          pip3 install numpy disutils
+          python3 -m venv edgetpu
+          source edgetpu/bin/activate
+          python3 -m pip install numpy disutils
 
       - name: Fix macOS
         run: |
@@ -184,6 +186,7 @@ jobs:
       - name: Compile
         run: |
           export PYTHON_BIN_PATH="$(which python3)"
+          source edgetpu/bin/activate
           CPU="${{ matrix.pair.cpu }}" make
 
       - name: codesign
