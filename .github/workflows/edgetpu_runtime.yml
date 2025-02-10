@@ -174,8 +174,8 @@ jobs:
 
       - name: Fix macOS
         run: |
-          bazel clean --expunge 
-          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          bazel clean --expunge
+          sudo xcode-select -r
           sudo xcodebuild -license accept
           xcode-select -p
           bazel clean --expunge
