@@ -99,6 +99,13 @@ tf_workspace0()
 load("@coral_crosstool//:configure.bzl", "cc_crosstool")
 cc_crosstool(name = "crosstool", cpp_version = "c++14")
 
+load(
+    "@local_tsl//third_party/gpus/cuda/hermetic:cuda_configure.bzl",
+    "cuda_configure",
+)
+
+cuda_configure(name = "local_config_cuda")
+
 BAZEL_ZIG_CC_VERSION = "1.0.3"
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive") 
 
