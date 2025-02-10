@@ -147,7 +147,7 @@ jobs:
           files: "edgetpu_runtime_*.tar.gz"
 
   build_macos:
-    runs-on: macos-14
+    runs-on: macos-13
     env:
       USE_BAZEL_VERSION: "6.0.0"
       TF_NEED_HDFS: "0"
@@ -175,7 +175,7 @@ jobs:
       - name: Fix macOS
         run: |
           bazel clean --expunge
-          sudo xcode-select -r
+          sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
           sudo xcodebuild -license accept
           xcode-select -p
           bazel clean --expunge
