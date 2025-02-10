@@ -147,9 +147,13 @@ jobs:
           files: "edgetpu_runtime_*.tar.gz"
 
   build_macos:
-    runs-on: macos-11
+    runs-on: macos-14
     env:
       USE_BAZEL_VERSION: "6.0.0"
+      TF_NEED_HDFS: "0"
+      TF_NEED_CUDA: "0"
+      TF_NEED_ROCM: "0"
+      TF_NEED_MKL: "0"
     strategy:
       fail-fast: false
       matrix:
@@ -160,16 +164,29 @@ jobs:
             triplet: "x86_64-apple-darwin"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           brew install libusb
-          pip3 install numpy disutils
+          python3 -m venv edgetpu
+          source edgetpu/bin/activate
+          python3 -m pip install numpy disutils
+
+      - name: Fix macOS
+        run: |
+          bazel clean --expunge
+          sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
+          sudo xcodebuild -license accept
+          xcode-select -p
+          bazel clean --expunge
+          bazel shutdown
 
       - name: Compile
         run: |
           export PYTHON_BIN_PATH="$(which python3)"
+          source edgetpu/bin/activate
           CPU="${{ matrix.pair.cpu }}" make
 
       - name: codesign
