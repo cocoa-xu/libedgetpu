@@ -177,7 +177,9 @@ jobs:
           bazel clean --expunge 
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           sudo xcodebuild -license accept
-          bazel clean --expunge 
+          xcode-select -p
+          bazel clean --expunge
+          bazel shutdown
 
       - name: Compile
         run: |
