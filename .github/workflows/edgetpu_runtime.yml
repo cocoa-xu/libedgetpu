@@ -147,7 +147,7 @@ jobs:
           files: "edgetpu_runtime_*.tar.gz"
 
   build_macos:
-    runs-on: macos-13
+    runs-on: macos-14
     env:
       USE_BAZEL_VERSION: "6.0.0"
       TF_NEED_HDFS: "0"
