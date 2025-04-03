@@ -21,6 +21,7 @@ TF_PYTHON_VERSION = "{}"
 HERMETIC_PYTHON_VERSION = "{}"
 WHEEL_NAME = "{}"
 WHEEL_COLLAB = "{}"
+USE_PYWRAP_RULES = "{}"
 """
 
 def _python_repository_impl(repository_ctx):
@@ -28,12 +29,13 @@ def _python_repository_impl(repository_ctx):
     version = repository_ctx.os.environ.get("TF_PYTHON_VERSION", "")
     wheel_name = repository_ctx.os.environ.get("WHEEL_NAME", "tensorflow")
     wheel_collab = repository_ctx.os.environ.get("WHEEL_COLLAB", False)
+    use_pywrap_rules = repository_ctx.os.environ.get("USE_PYWRAP_RULES", False)
     if version not in VERSIONS:
         print(WARNING)  # buildifier: disable=print
         version = DEFAULT_VERSION
     repository_ctx.file(
         "py_version.bzl",
-        content.format(version, version, wheel_name, wheel_collab),
+        content.format(version, version, wheel_name, wheel_collab, use_pywrap_rules),
     )
 
 python_repository = repository_rule(
