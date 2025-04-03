@@ -26,7 +26,7 @@ jobs:
   build_linux:
     runs-on: ubuntu-20.04
     env:
-      LIBUSB_VER: "1.0.27"
+      LIBUSB_VER: "1.0.28"
       USE_BAZEL_VERSION: "6.0.0"
       ZIG_VERSION: "0.10.1"
 
