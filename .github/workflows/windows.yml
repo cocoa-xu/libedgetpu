@@ -7,11 +7,8 @@ on:
         - '**/*.md'
         - 'LICENSE*'
   push:
-    tags:
-      - 'v*'
     branches:
-      - master
-      - test-*
+      - test-windows*
     paths-ignore:
     - '**/*.md'
     - 'LICENSE*'
