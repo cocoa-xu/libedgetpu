@@ -1,6 +1,7 @@
 name: edgetpu-runtime
 
 on:
+  workflow_dispatch:
   pull_request:
     paths-ignore:
         - '**/*.md'
@@ -24,11 +25,18 @@ concurrency:
 
 jobs:
   build_linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    # Build inside an Ubuntu 20.04 container so the produced shared libraries
+    # link against an older glibc, while still running on a current GitHub runner.
+    container: ubuntu:20.04
+    defaults:
+      run:
+        shell: bash
     env:
       LIBUSB_VER: "1.0.30"
-      USE_BAZEL_VERSION: "6.0.0"
+      USE_BAZEL_VERSION: "7.4.1"
       ZIG_VERSION: "0.10.1"
+      DEBIAN_FRONTEND: noninteractive
 
     strategy:
       fail-fast: false
@@ -78,14 +86,25 @@ jobs:
             cpp_compiler: ""
 
     steps:
+      - name: Install base packages
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential automake autoconf pkg-config bc m4 \
+            unzip zip xz-utils gzip curl wget git ca-certificates file xxd patch \
+            python3 python3-numpy \
+            ${{ matrix.pair.c_compiler }} ${{ matrix.pair.cpp_compiler }}
+          git config --global --add safe.directory '*'
+
+      - name: Install Bazelisk
+        run: |
+          curl -fSL "https://github.com/bazelbuild/bazelisk/releases/download/v1.29.0/bazelisk-linux-amd64" -o /usr/local/bin/bazel
+          chmod +x /usr/local/bin/bazel
+
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 unzip zip curl git gzip python3 python3-numpy ca-certificates ${{ matrix.pair.c_compiler }} ${{ matrix.pair.cpp_compiler }}
 
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2
@@ -98,7 +117,7 @@ jobs:
           wget "https://github.com/libusb/libusb/releases/download/v${LIBUSB_VER}/libusb-${LIBUSB_VER}.tar.bz2" -O "libusb-${LIBUSB_VER}.tar.bz2"
           tar -xf "libusb-${LIBUSB_VER}.tar.bz2"
           cd "libusb-${LIBUSB_VER}"
-          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then                                                                           
+          if [ "${{ matrix.pair.cpu }}" = "armv6" ]; then
             curl -fSL https://github.com/nerves-project/toolchains/releases/download/v13.2.0/nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0-363664F.tar.xz -o nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0-363664F.tar.xz
             tar -xf nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0-363664F.tar.xz
             export PATH="$(pwd)/nerves_toolchain_armv6_nerves_linux_gnueabihf-linux_x86_64-13.2.0/bin:${PATH}"
@@ -141,6 +160,13 @@ jobs:
           tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edgetpu_runtime_${{ matrix.pair.host }}
+          path: "edgetpu_runtime_*.tar.gz"
+          if-no-files-found: error
+
       - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -149,7 +175,7 @@ jobs:
   build_macos:
     runs-on: macos-14
     env:
-      USE_BAZEL_VERSION: "6.0.0"
+      USE_BAZEL_VERSION: "7.4.1"
       TF_NEED_HDFS: "0"
       TF_NEED_CUDA: "0"
       TF_NEED_ROCM: "0"
@@ -172,16 +198,20 @@ jobs:
           brew install libusb
           python3 -m venv edgetpu
           source edgetpu/bin/activate
-          python3 -m pip install numpy disutils
+          python3 -m pip install numpy
 
-      - name: Fix macOS
+      - name: Select Xcode
         run: |
-          bazel clean --expunge
-          sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
-          sudo xcodebuild -license accept
+          echo "Available Xcode versions:"
+          ls -d /Applications/Xcode*.app
+          XCODE="$(ls -d /Applications/Xcode_*.app 2>/dev/null | grep -viE 'beta|rc' | sort -V | tail -n1)"
+          if [ -z "${XCODE}" ]; then XCODE="/Applications/Xcode.app"; fi
+          echo "Selecting Xcode at: ${XCODE}"
+          sudo xcode-select -s "${XCODE}/Contents/Developer"
+          sudo xcodebuild -license accept || true
           xcode-select -p
-          bazel clean --expunge
-          bazel shutdown
+          bazel clean --expunge || true
+          bazel shutdown || true
 
       - name: Compile
         run: |
@@ -204,6 +234,13 @@ jobs:
           export ARTEFACT_FILENAME="edgetpu_runtime_${TRIPLET}_${GITHUB_REF##*/}"
           tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edgetpu_runtime_${{ matrix.pair.triplet }}
+          path: "edgetpu_runtime_*.tar.gz"
+          if-no-files-found: error
 
       - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
