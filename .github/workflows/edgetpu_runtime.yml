@@ -141,7 +141,7 @@ jobs:
           tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: "edgetpu_runtime_*.tar.gz"
@@ -205,7 +205,7 @@ jobs:
           tar -czf "${ARTEFACT_FILENAME}.tar.gz" "${PACK_DIR}"
           rm -rf "${PACK_DIR}"
 
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: "edgetpu_runtime_*.tar.gz"
