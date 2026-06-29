@@ -1,4 +1,5 @@
 common --experimental_repo_remote_exec
+common --noenable_bzlmod
 
 build --define darwinn_portable=1
 build --subcommands

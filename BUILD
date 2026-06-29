@@ -68,3 +68,40 @@ config_setting(
         "cpu": "darwin",
     },
 )
+
+# Target platforms for the legacy GNU cross builds. The compiler still comes from
+# --crosstool_top/--cpu, but these set the target constraints so TF's SIMD
+# select()s resolve to the real arch instead of the x86_64 host.
+platform(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+platform(
+    name = "linux_armv7",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:armv7",
+    ],
+)
+
+platform(
+    name = "linux_riscv64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:riscv64",
+    ],
+)
+
+# @platforms//cpu has no armv6; the generic arm constraint is enough to keep the
+# target off the x86_64 SIMD path (arm1176jzf-s flags come from .bazelrc.armv6).
+platform(
+    name = "linux_armv6",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm",
+    ],
+)

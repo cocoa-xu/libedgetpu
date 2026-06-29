@@ -7,7 +7,7 @@ Defaults to 3.10.
 To set wheel name, add "--repo_env=WHEEL_NAME=tensorflow_cpu"
 """
 
-VERSIONS = ["3.9", "3.10", "3.11", "3.12"]
+VERSIONS = ["3.9", "3.10", "3.11", "3.12", "3.13"]
 DEFAULT_VERSION = "3.11"
 WARNING = """
 TF_PYTHON_VERSION environment variable was not set correctly; using Python {}.
@@ -21,7 +21,7 @@ TF_PYTHON_VERSION = "{}"
 HERMETIC_PYTHON_VERSION = "{}"
 WHEEL_NAME = "{}"
 WHEEL_COLLAB = "{}"
-USE_PYWRAP_RULES = "{}"
+USE_PYWRAP_RULES = {}
 """
 
 def _python_repository_impl(repository_ctx):
@@ -29,7 +29,7 @@ def _python_repository_impl(repository_ctx):
     version = repository_ctx.os.environ.get("TF_PYTHON_VERSION", "")
     wheel_name = repository_ctx.os.environ.get("WHEEL_NAME", "tensorflow")
     wheel_collab = repository_ctx.os.environ.get("WHEEL_COLLAB", False)
-    use_pywrap_rules = repository_ctx.os.environ.get("USE_PYWRAP_RULES", False)
+    use_pywrap_rules = bool(repository_ctx.os.environ.get("USE_PYWRAP_RULES", False))
     if version not in VERSIONS:
         print(WARNING)  # buildifier: disable=print
         version = DEFAULT_VERSION
@@ -40,5 +40,5 @@ def _python_repository_impl(repository_ctx):
 
 python_repository = repository_rule(
     implementation = _python_repository_impl,
-    environ = ["TF_PYTHON_VERSION", "WHEEL_NAME", "WHEEL_COLLAB"],
+    environ = ["TF_PYTHON_VERSION", "WHEEL_NAME", "WHEEL_COLLAB", "USE_PYWRAP_RULES"],
 )
