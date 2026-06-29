@@ -5,11 +5,11 @@ This module contains workspace definitions for building and using libedgetpu.
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
-# TF release 2.16.1 as of Mar 8, 2024
+# TF release 2.20.0 as of Aug 7, 2025
 #
 # TENSORFLOW_SHA256=$(curl -fSL "https://github.com/tensorflow/tensorflow/archive/${TENSORFLOW_COMMIT}.tar.gz" | sha256sum)
-TENSORFLOW_COMMIT = "5bc9d26649cca274750ad3625bd93422617eed4b"
-TENSORFLOW_SHA256 = "fe592915c85d1a89c20f3dd89db0772ee22a0fbda78e39aa46a778d638a96abc"
+TENSORFLOW_COMMIT = "72fbba3d20f4616d7312b5e2b7f79daf6e82f2fa"
+TENSORFLOW_SHA256 = "86150d55ce57b2298d8ed42caa7b91c466ad33d9f7f347117c2257cc576d3413"
 
 CORAL_CROSSTOOL_COMMIT = "6bcc2261d9fc60dff386b557428d98917f0af491"
 CORAL_CROSSTOOL_SHA256 = "38cb4da13009d07ebc2fed4a9d055b0f914191b344dd2d1ca5803096343958b4"
