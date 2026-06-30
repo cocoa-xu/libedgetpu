@@ -39,3 +39,15 @@ cc_toolchain(
     supports_param_files = 1,
     toolchain_config = ":my_armv6_toolchain_config",
 )
+
+# Bazel 7 resolves cc toolchains through the target platform, so register this
+# arm1176 toolchain for //:linux_armv6 (@platforms//cpu:arm).
+toolchain(
+    name = "cc-toolchain-armv6",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm",
+    ],
+    toolchain = ":cc-compiler-armv6",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)

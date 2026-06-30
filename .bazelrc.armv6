@@ -9,19 +9,17 @@ build --spawn_strategy=standalone
 
 build:linux --crosstool_top=@crosstool//:toolchains
 build:linux --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+build:linux --cxxopt=-std=c++17
 
-build:macos --cxxopt=-std=c++14
+build:macos --cxxopt=-std=c++17
 build:macos --copt=-fvisibility=hidden
 
 build:windows --copt=/DWIN32_LEAN_AND_MEAN
-build:windows --cxxopt=/std:c++14
+build:windows --cxxopt=/std:c++17
 
-build:armv6_linux_base --crosstool_top=@my_local_config_embedded_arm//:toolchain
-build:armv6_linux_base --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
-build:armv6_linux --config=armv6_linux_base
 build:armv6_linux --cpu=armv6
 build:armv6_linux --platforms=//:linux_armv6
-build:armv6_linux --incompatible_enable_cc_toolchain_resolution=false
+build:armv6_linux --extra_toolchains=@my_local_config_embedded_arm//:cc-toolchain-armv6
 build:armv6_linux --copt -mfp16-format=ieee
 build:armv6_linux --copt -mabi=aapcs-linux
 build:armv6_linux --copt -mfpu=vfp
