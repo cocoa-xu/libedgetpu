@@ -4,6 +4,14 @@ This repo contains the source code for the userspace
 level runtime driver for [Coral devices](https://coral.ai/products).
 This software is distributed in the binary form at [coral.ai/software](https://coral.ai/software/).
 
+## Build configuration
+
+This fork builds against **TensorFlow 2.21.0** (using **Bazel 7.7.0**). The prebuilt
+binaries attached to each [release](https://github.com/cocoa-xu/libedgetpu/releases) are
+produced by GitHub Actions: the Linux targets are compiled inside an **`ubuntu:20.04`**
+container (glibc 2.31) so the shared libraries keep a low glibc requirement, while the
+macOS targets are built on the GitHub-hosted macOS runners.
+
 ## Building
 
 There are three ways to build libedgetpu:
