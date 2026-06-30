@@ -69,17 +69,10 @@ config_setting(
     },
 )
 
-# Target platforms for the legacy GNU cross builds. The compiler still comes from
-# --crosstool_top/--cpu, but these set the target constraints so TF's SIMD
-# select()s resolve to the real arch instead of the x86_64 host.
-platform(
-    name = "linux_aarch64",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:aarch64",
-    ],
-)
-
+# armv7a GNU cross target. Bazel 7 resolves cc toolchains through the platform,
+# and the zig fork used for arm64/riscv64 has no 32-bit ARM, so armv7a reuses
+# coral_crosstool's gcc via this toolchain. The armv7 cpu constraint also keeps
+# TF's x86 SIMD select()s (e.g. -msse4.2) off-target.
 platform(
     name = "linux_armv7",
     constraint_values = [
@@ -88,12 +81,53 @@ platform(
     ],
 )
 
+toolchain(
+    name = "cc-toolchain-armv7a",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:armv7",
+    ],
+    toolchain = "@crosstool//:cc-compiler-armv7a",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
+# aarch64 / riscv64 GNU cross targets, same idea as armv7a: select coral_crosstool's
+# gcc through a registered platform toolchain (Bazel 7 resolves cc toolchains via
+# the platform), with a real cpu constraint so x86 SIMD select()s stay off-target.
+platform(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+toolchain(
+    name = "cc-toolchain-aarch64",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    toolchain = "@crosstool//:cc-compiler-aarch64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
 platform(
     name = "linux_riscv64",
     constraint_values = [
         "@platforms//os:linux",
         "@platforms//cpu:riscv64",
     ],
+)
+
+toolchain(
+    name = "cc-toolchain-riscv64",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:riscv64",
+    ],
+    toolchain = "@crosstool//:cc-compiler-riscv64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 # @platforms//cpu has no armv6; the generic arm constraint is enough to keep the

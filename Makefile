@@ -53,17 +53,18 @@ ZIG_CPU = arm
 ABI = gnueabihf.2.28
 endif
 
-# GNU cross builds select the compiler via --crosstool_top/--cpu, but TF's SIMD
-# select()s key on the target platform. Without --platforms the target defaults
-# to the x86_64 host, leaking x86-only flags (e.g. -msse4.2) into the cross
-# compile, so map each cross CPU to a target platform defined in //:BUILD.
-# Resolution stays disabled so the compiler keeps coming from --crosstool_top.
+# Bazel 7 always resolves cc toolchains through the target platform, so each GNU
+# cross CPU needs a platform whose registered toolchain provides the cross
+# compiler; the platform's cpu constraint also keeps TF's x86 SIMD select()s
+# (e.g. -msse4.2) off-target. coral_crosstool's gcc is reused via //:cc-toolchain-*.
 ifeq ($(OS),Linux)
 ifeq ($(ABI),gnu)
-TARGET_PLATFORM_aarch64 := //:linux_aarch64
-TARGET_PLATFORM_armv7a := //:linux_armv7
-TARGET_PLATFORM_riscv64 := //:linux_riscv64
-BAZEL_PLATFORM_FLAG := $(if $(TARGET_PLATFORM_$(CPU)),--platforms=$(TARGET_PLATFORM_$(CPU)) --incompatible_enable_cc_toolchain_resolution=false,)
+CROSS_PLATFORM_aarch64 := //:linux_aarch64
+CROSS_PLATFORM_armv7a := //:linux_armv7
+CROSS_PLATFORM_riscv64 := //:linux_riscv64
+ifneq ($(CROSS_PLATFORM_$(CPU)),)
+BAZEL_CROSS_FLAGS := --platforms=$(CROSS_PLATFORM_$(CPU)) --extra_toolchains=//:cc-toolchain-$(CPU)
+endif
 endif
 endif
 
@@ -102,7 +103,7 @@ BAZEL_BUILD_FLAGS = \
   --stripopt=-x \
   --compilation_mode=$(COMPILATION_MODE) \
   --cpu=$(CPU) \
-  $(BAZEL_PLATFORM_FLAG) \
+  $(BAZEL_CROSS_FLAGS) \
   --embed_label='TENSORFLOW_COMMIT=$(shell bazel query "@libedgetpu_properties//..." | grep tensorflow_commit | cut -d\# -f2)' \
   --stamp
 

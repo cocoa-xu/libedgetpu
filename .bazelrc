@@ -8,9 +8,10 @@ build --enable_platform_specific_config
 
 build:linux --crosstool_top=@crosstool//:toolchains
 build:linux --compiler=gcc
+build:linux --cxxopt=-std=c++17
 
-build:macos --cxxopt=-std=c++14
+build:macos --cxxopt=-std=c++17
 build:macos --copt=-fvisibility=hidden
 
 build:windows --copt=/DWIN32_LEAN_AND_MEAN
-build:windows --cxxopt=/std:c++14
+build:windows --cxxopt=/std:c++17
