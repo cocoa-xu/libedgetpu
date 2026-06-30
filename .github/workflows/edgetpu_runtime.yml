@@ -2,6 +2,11 @@ name: edgetpu-runtime
 
 on:
   workflow_dispatch:
+    inputs:
+      targets:
+        description: 'Comma/space-separated targets to build (linux host triplet or apple triplet), or "all".'
+        default: 'all'
+        type: string
   pull_request:
     paths-ignore:
         - '**/*.md'
@@ -20,11 +25,69 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Include the dispatch target list so per-target re-runs don't cancel each other,
+  # while pushes/PRs to the same ref still cancel in progress (group "...-all").
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.targets || 'all' }}
   cancel-in-progress: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      linux: ${{ steps.filter.outputs.linux }}
+      macos: ${{ steps.filter.outputs.macos }}
+      linux_any: ${{ steps.filter.outputs.linux_any }}
+      macos_any: ${{ steps.filter.outputs.macos_any }}
+    steps:
+      - name: Compute target matrix
+        id: filter
+        env:
+          TARGETS: ${{ github.event.inputs.targets || 'all' }}
+        run: |
+          python3 <<'PY'
+          import json, os
+
+          LINUX = [
+              {"host": "x86_64-linux-gnu", "cc": "gcc", "cxx": "g++", "cpu": "k8", "c_compiler": "gcc", "cpp_compiler": "g++"},
+              {"host": "armv7l-linux-gnueabihf", "cc": "arm-linux-gnueabihf-gcc", "cxx": "arm-linux-gnueabihf-g++", "cpu": "armv7a", "c_compiler": "gcc-arm-linux-gnueabihf", "cpp_compiler": "g++-arm-linux-gnueabihf"},
+              {"host": "armv6-linux-gnueabihf", "cc": "arm-linux-gnueabihf-gcc", "cxx": "arm-linux-gnueabihf-g++", "cpu": "armv6", "c_compiler": "gcc-arm-linux-gnueabihf", "cpp_compiler": "g++-arm-linux-gnueabihf"},
+              {"host": "aarch64-linux-gnu", "cc": "aarch64-linux-gnu-gcc", "cxx": "aarch64-linux-gnu-g++", "cpu": "aarch64", "c_compiler": "gcc-aarch64-linux-gnu", "cpp_compiler": "g++-aarch64-linux-gnu"},
+              {"host": "aarch64-linux-musl", "cc": "zig cc -target aarch64-linux-musl", "cxx": "zig c++ -target aarch64-linux-musl", "cpu": "aarch64", "c_compiler": "", "cpp_compiler": ""},
+              {"host": "riscv64-linux-gnu", "cc": "riscv64-linux-gnu-gcc", "cxx": "riscv64-linux-gnu-g++", "cpu": "riscv64", "c_compiler": "gcc-riscv64-linux-gnu", "cpp_compiler": "g++-riscv64-linux-gnu"},
+              {"host": "riscv64-linux-musl", "cc": "zig cc -target riscv64-linux-musl", "cxx": "zig c++ -target riscv64-linux-musl", "cpu": "riscv64", "c_compiler": "", "cpp_compiler": ""},
+          ]
+          MACOS = [
+              {"cpu": "darwin_arm64", "triplet": "aarch64-apple-darwin"},
+              {"cpu": "darwin_x86_64", "triplet": "x86_64-apple-darwin"},
+          ]
+
+          raw = (os.environ.get("TARGETS") or "all").strip()
+          sel = None
+          if raw and raw.lower() != "all":
+              sel = {t.strip() for t in raw.replace(",", " ").split() if t.strip()}
+
+          linux = LINUX if sel is None else [e for e in LINUX if e["host"] in sel]
+          macos = MACOS if sel is None else [e for e in MACOS if e["triplet"] in sel or e["cpu"] in sel]
+
+          if sel is not None:
+              known = {e["host"] for e in LINUX} | {e["triplet"] for e in MACOS} | {e["cpu"] for e in MACOS}
+              unknown = sorted(sel - known)
+              if unknown:
+                  print("WARNING: ignoring unknown targets:", ", ".join(unknown))
+
+          print("selected linux:", [e["host"] for e in linux])
+          print("selected macos:", [e["triplet"] for e in macos])
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("linux=" + json.dumps({"pair": linux}) + "\n")
+              f.write("macos=" + json.dumps({"pair": macos}) + "\n")
+              f.write("linux_any=" + ("true" if linux else "false") + "\n")
+              f.write("macos_any=" + ("true" if macos else "false") + "\n")
+          PY
+
   build_linux:
+    needs: setup
+    if: ${{ needs.setup.outputs.linux_any == 'true' }}
     runs-on: ubuntu-latest
     # Build inside an Ubuntu 20.04 container so the produced shared libraries
     # link against an older glibc, while still running on a current GitHub runner.
@@ -34,56 +97,13 @@ jobs:
         shell: bash
     env:
       LIBUSB_VER: "1.0.30"
-      USE_BAZEL_VERSION: "7.4.1"
+      USE_BAZEL_VERSION: "7.7.0"
       ZIG_VERSION: "0.10.1"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
       fail-fast: false
-      matrix:
-        pair:
-          - host: "x86_64-linux-gnu"
-            cc: "gcc"
-            cxx: "g++"
-            cpu: "k8"
-            c_compiler: gcc
-            cpp_compiler: g++
-          - host: "armv7l-linux-gnueabihf"
-            cc: "arm-linux-gnueabihf-gcc"
-            cxx: "arm-linux-gnueabihf-g++"
-            cpu: "armv7a"
-            c_compiler: gcc-arm-linux-gnueabihf
-            cpp_compiler: g++-arm-linux-gnueabihf
-          - host: "armv6-linux-gnueabihf"
-            cc: "arm-linux-gnueabihf-gcc"
-            cxx: "arm-linux-gnueabihf-g++"
-            cpu: "armv6"
-            c_compiler: gcc-arm-linux-gnueabihf
-            cpp_compiler: g++-arm-linux-gnueabihf
-          - host: "aarch64-linux-gnu"
-            cc: "aarch64-linux-gnu-gcc"
-            cxx: "aarch64-linux-gnu-g++"
-            cpu: "aarch64"
-            c_compiler: gcc-aarch64-linux-gnu
-            cpp_compiler: g++-aarch64-linux-gnu
-          - host: "aarch64-linux-musl"
-            cc: "zig cc -target aarch64-linux-musl"
-            cxx: "zig c++ -target aarch64-linux-musl"
-            cpu: "aarch64"
-            c_compiler: ""
-            cpp_compiler: ""
-          - host: "riscv64-linux-gnu"
-            cc: "riscv64-linux-gnu-gcc"
-            cxx: "riscv64-linux-gnu-g++"
-            cpu: "riscv64"
-            c_compiler: gcc-riscv64-linux-gnu
-            cpp_compiler: g++-riscv64-linux-gnu
-          - host: "riscv64-linux-musl"
-            cc: "zig cc -target riscv64-linux-musl"
-            cxx: "zig c++ -target riscv64-linux-musl"
-            cpu: "riscv64"
-            c_compiler: ""
-            cpp_compiler: ""
+      matrix: ${{ fromJson(needs.setup.outputs.linux) }}
 
     steps:
       - name: Install base packages
@@ -144,8 +164,9 @@ jobs:
             cp error_codes.armv6.h port/default/error_codes.h
             CPU="armv6" make libedgetpu
           else
-            export CC="${{ matrix.pair.cc }}"
-            export CXX="${{ matrix.pair.cxx }}"
+            # No CC/CXX export: the target compiler comes from the registered
+            # platform toolchain (see Makefile/BUILD), and host tools (e.g. flatc)
+            # must build with the default x86_64 toolchain, not the cross compiler.
             CPU="${{ matrix.pair.cpu }}" make libedgetpu
           fi
 
@@ -173,21 +194,18 @@ jobs:
           files: "edgetpu_runtime_*.tar.gz"
 
   build_macos:
+    needs: setup
+    if: ${{ needs.setup.outputs.macos_any == 'true' }}
     runs-on: macos-14
     env:
-      USE_BAZEL_VERSION: "7.4.1"
+      USE_BAZEL_VERSION: "7.7.0"
       TF_NEED_HDFS: "0"
       TF_NEED_CUDA: "0"
       TF_NEED_ROCM: "0"
       TF_NEED_MKL: "0"
     strategy:
       fail-fast: false
-      matrix:
-        pair:
-          - cpu: "darwin_arm64"
-            triplet: "aarch64-apple-darwin"
-          - cpu: "darwin_x86_64"
-            triplet: "x86_64-apple-darwin"
+      matrix: ${{ fromJson(needs.setup.outputs.macos) }}
 
     steps:
       - name: Checkout
