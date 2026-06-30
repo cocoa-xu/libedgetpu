@@ -69,10 +69,10 @@ config_setting(
     },
 )
 
-# armv7a GNU cross target. Bazel 7 resolves cc toolchains through the platform,
-# and the zig fork used for arm64/riscv64 has no 32-bit ARM, so armv7a reuses
-# coral_crosstool's gcc via this toolchain. The armv7 cpu constraint also keeps
-# TF's x86 SIMD select()s (e.g. -msse4.2) off-target.
+# GNU cross targets (armv7a, aarch64, riscv64) select coral_crosstool's gcc via a
+# registered platform toolchain, since Bazel 7 always resolves cc toolchains through
+# the target platform; the real cpu constraint keeps TF's x86 SIMD select()s
+# (e.g. -msse4.2) off-target.
 platform(
     name = "linux_armv7",
     constraint_values = [
@@ -91,9 +91,6 @@ toolchain(
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
-# aarch64 / riscv64 GNU cross targets, same idea as armv7a: select coral_crosstool's
-# gcc through a registered platform toolchain (Bazel 7 resolves cc toolchains via
-# the platform), with a real cpu constraint so x86 SIMD select()s stay off-target.
 platform(
     name = "linux_aarch64",
     constraint_values = [
